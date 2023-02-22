@@ -1,0 +1,43 @@
+[
+    {
+        "desc": "bamman_adj_only",
+        "switch": true,
+        "input": [
+            "DATA/extractTuples/51",
+            "r\"1951\""
+        ],
+        "output_dir": "DATA/heirarchical_bayes/bamman",
+        "sampler": "bamman_single.sample",
+        "params": {
+            "alpha": 1,
+            "nu": 1,
+            "gamma": 1,
+            "persona_count": 2,
+            "topic_count":25 
+        },
+        "metadata": [
+            "DATA/KB_sampling/ALL/metadata",
+            "r\"1951\""
+        ],
+        "label_col": "doc_label",
+        "wanted_entities": ["neger", "koning"],
+        "viewpoints": {
+            "Protestant_1951": {
+                "ddd:papertitle": "r\"^Trouw$|^Nederlands dagblad : gereformeerd gezinsblad$\"",
+                "dc:date": "r\"1951\""
+            },
+            "Catholic_1951": {
+                "ddd:papertitle": "r\"De T\u0133d : godsdienstig-staatkundig dagblad$|^De Volkskrant$|^De Maasbode$\"",
+                "dc:date": "r\"1951\""
+            },
+            "Liberal_1951": {
+                "ddd:papertitle": "r\"^Algemeen Handelsblad$|^NRC Handelsblad$|^De Telegraaf$|^Het vaderland$|^Algemeen Dagblad$\"",
+                "dc:date": "r\"1951\""
+            },
+            "Socialist_1951": {
+                "ddd:papertitle": "r\"^Het vr\u0133e volk : democratisch-socialistisch dagblad$|^Het Parool$|^De waarheid$\"",
+                "dc:date": "r\"1951\""
+            }
+        }
+    }
+]

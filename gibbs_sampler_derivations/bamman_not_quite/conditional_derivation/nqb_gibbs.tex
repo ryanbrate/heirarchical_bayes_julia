@@ -1,0 +1,369 @@
+% 
+% \verb+snippet here+   % allows for verbatim code in-line
+%
+
+\documentclass[a4paper]{article}
+
+\usepackage{multicol}
+\usepackage[british]{babel}
+\usepackage[utf8]{inputenc} %allows input of accented characters from keyboard input directly
+\usepackage{fullpage} % specify margins specifier: defaults to 4 margins of equal size
+%\usepackage[margin=2cm]{geometry} %all margins 2cm
+
+%import common amsmath packages
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+
+\usepackage{graphicx} %allows latex to manage embedded images
+
+\usepackage{caption}
+\usepackage{subcaption}
+
+\usepackage{listings}  % \lstset{language=r} %code \end{document}
+\usepackage[outputdir=build]{minted}  % formatted code blocks: e.g., \begin{minted}{r} %code \end{minted}
+
+\usepackage{multicol}
+% see https://www.overleaf.com/learn/latex/Multiple_columns
+% see \begin{multicols}{}
+
+\usepackage{float} %enable floats in multicol via [H]
+
+\usepackage{epigraph}
+\setlength\epigraphwidth{.8\textwidth}
+
+\usepackage[colorinlistoftodos]{todonotes} % add notes: e.g., \todo{This is a note}
+\newcommand\td{\todo[inline]}
+
+\usepackage[most]{tcolorbox} % colour box with, e.g., \begin{tcolorbox}[title=RJB Note]
+
+\usepackage{hyperref} %allows hyperlinks in pdf . MUST BE LAST \usepackage
+
+
+%changing default from from "Computer Modern" - https://www.overleaf.com/learn/latex/Font_typefaces 
+%helvetica
+%\usepackage{phv}
+
+\title{Derivation of the Gibbs sampler conditional for Bamman's model}
+
+\author{Ryan Brate}
+
+\date{} %empty \date{} removes date from page when \maketitle is run
+
+\begin{document}
+
+\setlength\parindent{0pt} % new paragraphs do not indent
+
+% create custom version of \inputminted for r code \rcode{file.R}
+% import via \rcode. The alternative is using \lstinputlisting[language=r]{file.R}
+%------
+\definecolor{mintedbackground}{rgb}{0.95, 0.95, 0.95}
+\newmintedfile[rcode]{r}{bgcolor=mintedbackground}
+
+\definecolor{mintedbackground}{rgb}{0.95, 0.95, 0.95}
+\newmintedfile[pycode]{python}{bgcolor=mintedbackground}
+
+\maketitle
+
+% \begin{multicols}{2}  % via multicol package
+
+\tableofcontents
+
+%\begin{abstract}
+%\end{abstract}
+
+
+% \input{}
+
+\section{Plate model}
+
+I.e., removing the document from the model as a layer in the model, since it's not relevant ... we are picking a single character by document.
+
+$$
+\alpha -> \theta -> c -> [ [z -> w]_N ]_C
+$$
+$$
+\gamma -> [\phi_k]_K -> w 
+$$
+$$
+[\nu_r -> [\psi_{r,c}]_C ]_R -> z
+$$
+
+Notes:\\
+* $\theta=P(c)$, i.e., theta is a data-wide variable\\
+* $\phi_{k,w}=P(w|k)$\\
+* $\psi_{r, c, z}=P(z|r,c)$
+
+Hence, $\theta_{d}$, $\phi_{k}$, $\psi_{r, c}$; are conditional probability vectors
+
+
+
+\section{Posterior Joint Distribution}
+
+The posterior joint is proportional to the joint:
+$$
+P(\alpha, \gamma, \nu, \theta, \phi, \psi, C, Z | W, R) = \frac{P(\alpha, \gamma, \nu, \theta, \phi, \psi, C, Z, W, R)}{P(W,R)} \propto P(\alpha, \gamma, \nu, \theta, \phi, \psi, C, Z, W, R)
+$$
+
+The joint:
+
+$$
+\text{joint probability} = P(\alpha, \gamma, \nu, \theta, \phi, \psi, C, Z, W, R) = P(\alpha, \gamma, \nu).P(\theta|\alpha).P(\phi|\gamma).P(\psi|\nu).P(C|\theta).P(Z|C, \psi).P(W|Z, \phi)
+$$
+
+Where:
+$$
+P(\theta|\alpha) = {\frac{1}{B(\alpha)}} \prod_C \theta_{c}^{\alpha_c-1}
+$$
+
+$$
+P(\phi|\gamma) = \prod_K {\frac{1}{B(\gamma)}} \prod_W  \phi_{k,w}^{\gamma_w-1}
+$$
+
+$$
+P(\psi|\nu) = \prod_R  \prod_C {\frac{1}{B(\nu_r)}} \prod_Z \psi_{r,c,z}^{\nu_{r,z}-1}
+$$
+
+$$
+P(C|\theta) = \prod_C \theta_c^{C_c}
+$$
+
+$$
+P(Z|C, \psi) = \prod_R \prod_C \prod_Z \psi_{r,c,z}^{C_{r,c,z}}
+$$
+
+$$
+P(W|Z, \phi) = \prod_K \prod_W \phi_{k,w}^{C_{k,w}}
+$$
+
+Thus,
+
+$$
+\text{joint}
+=
+[{\frac{1}{B(\alpha)}} \prod_C \theta^{\alpha_c-1+C_{c}}]
+.[\prod_K {\frac{1}{B(\gamma)}} \prod_W  \phi_{k,w}^{\gamma_w-1+C_{k,w}}]
+.[\prod_R  \prod_C {\frac{1}{B(\nu_r)}} \prod_Z \psi_{r,c,z}^{\nu_{r,z}-1+C_{r,c,z}}]
+.P(\alpha, \gamma, \nu)
+$$
+
+
+% Thus,
+
+% $$
+% \text{joint probability}
+% =
+% [\frac{1}{B(\alpha)} \prod_D \prod_C \theta_{d,c}^{\alpha_{c}-1+C_{d,c}}]\\
+% \times\\
+% [\frac{1}{B(\gamma)} \prod_{K} \prod_{W} \phi_{k,w}^{\gamma_{w}-1+C_{k,w}}]\\
+% \times\\
+% [\prod_{r}^{R} \frac{1}{B(\gamma_{r})} \prod_{p}^{P} \prod_{k}^{K} \psi_{r,p,k}^{\nu_{r,z}-1+C_{c,r,z}}]\\
+% \times\\
+% P(R)
+% $$
+
+\section{Conditional probabilities based on the collapsed form}
+
+\subsection{collapsed joint form}
+
+    By inspection, we can see that the $phi$, $psi$ and $phi$ terms are of the beta distribution parametric form, hence, knowing such distributions sum to one, we can take advantage of this and intregrate out the variables, giving a marginalised form.\\
+
+$$
+P(\alpha, \gamma, \nu, C, Z, W, R) = \Int \Int \Int P(\alpha, \gamma, \nu, \theta, \phi, \psi, C, Z, W, R) d{\theta} d{\phi} d{\phi}
+$$
+
+Thus, the marginalised joint becomes:
+
+$$
+\text{joint}
+=
+{\frac{B(\alpha + C)}{B(\alpha)}}
+.\prod_K {\frac{B(\gamma + C_{k})}{B(\gamma)}}
+.\prod_R  \prod_C {\frac{B(\nu_r + C_{r,c})}{B(\nu_r)}}
+.P(\alpha, \gamma, \nu)
+$$
+
+\subsection{conditional probability for $z_{d,c,n}$}%
+\label{sub:subsubsection name}
+
+$$
+P(z_{c,n}|Z^{-cn}, W, R, ...) 
+= 
+\frac
+    {
+        P(z_{c,n}, w_{c,n}, r_{c,n}| Z^{-cn}, W^{-cn}, R^{-cn}, ...)
+    }
+    {
+        P(w_{c,n}, r_{c,n})
+    }
+$$
+
+Hence, 
+$$
+P(z_{c,n}|Z^{-cn}, W, R, ...)  \propto P(z_{c,n}, w_{c,n}, r_{c,n}| Z^{-cn}, W^{-cn}, R^{-cn}, ...)
+$$
+
+Where:
+
+$$
+P(z_{c,n}, w_{c,n}, r_{c,n}| Z^{-cn}, W^{-cn}, R^{-cn}, ...)
+=
+\frac
+    {P(\alpha, \gamma, \nu, \theta, \phi, \psi, C, Z, W, R)}
+    {P(\alpha, \gamma, \nu, \theta, \phi, \psi, C, Z^{-cn}, W^{-cn}, R^{-cn})}
+$$
+
+Where by inspection of the factors of the originally derived joint, the denominator is found by removing cn instances from the counts $C_{d,c}$, $C_{k,w}$ and $C_{r,c,z}$\\
+
+I.e., 
+
+$$
+P(z_{c,n}| Z^{-cn}, ...) 
+\propto 
+\frac
+{
+    \frac{B(\alpha + C)}{B(\alpha)}
+    .\prod_K {\frac{B(\gamma + C_{k})}{B(\gamma)}}
+    .\prod_R  \prod_C {\frac{B(\nu_r + C_{r,c})}{B(\nu_r)}}
+    .P(\alpha, \gamma, \nu)
+}
+{
+    {\frac{B(\alpha + C_{d}^{-cn})}{B(\alpha)}}
+    .\prod_K {\frac{B(\gamma + C_{k}^{-cn})}{B(\gamma)}}
+    .\prod_R  \prod_C {\frac{B(\nu_r + C_{r,c}^{-cn})}{B(\nu_r)}}
+    .P(\alpha, \gamma, \nu)
+}
+$$
+
+Where, e.g., $B(\alpha + C) = \frac{\prod_c^C \Gamma(alpha_c+C_{c})}{\Gamma(\sum_c alpha_c + C_{c})}$
+
+Hence, all factors which are not affected by removing $r^{cn}$, $w^{cn}$ and $z^{cn}$ are cancelled (this includes the first factor entirely since Cc is invariate with r,w,z removal), leaving:
+
+$$
+P(z_{c,n}=x| Z^{-cn}, ...) 
+\propto 
+\frac
+{
+    \frac
+    {
+        \Gamma(\gamma_{w_{cn}} + C_{x,w_{cn}}) . \Gamma(\nu_{r_{cn},c} + C_{r_dcn},c,x})
+    }
+    {
+        . \Gamma(\sum_{w'}^W(\gamma_{w'} + C_{x,w'})) 
+        . \Gamma(\sum_{k'}^K(\nu_{r_{cn},c} + C_{r_{cn},c,k'}))
+    }
+}
+{
+   \frac
+    {
+        \Gamma(\gamma_{w_{cn}} + C_{x,w_{cn}}^{-cn}) . \Gamma(\nu_{r_{dcn},c} + C_{r_{cn},c,x}^{-cn})
+    }
+    {
+        \Gamma(\sum_{w'}^W(\gamma_{w'} + C_{x,w'}^{-cn})) 
+        . \Gamma(\sum_{k'}^K(\nu_{r_{cn},c} + C_{r_{cn},c,k'}^{-cn}))
+    }
+}
+$$
+
+Which knowing that $\Gamma(x)=(x-1)\Gamma(x-1)$, and that e.g., $C_{c} = C_{c}^{-cn} + 1$, resolves to:
+
+$$
+P(z_{c,n}=x| Z^{-cn}, ...) 
+\propto 
+\frac
+{
+    (\gamma_{w_{cn}} + C_{x,w_{dcn}}^{-cn}) . (\nu_{r_{cn},c} + C_{r_{cn},c,x}^{-cn})
+}
+{
+    \sum_{w'}^W(\gamma_{w'} + C_{x,w'}^{-cn})
+    . \sum_{k'}^K(\nu_{r_{cn},c} + C_{r_{cn},c,k'}^{-cn})
+}
+$$
+
+
+The denominator of the 2nd is invariate with x, hence can be ignored:
+
+$$
+P(z_{c,n}=x| Z^{-cn}, ...) 
+\propto 
+(\nu_{r_{dcn},c} + C_{r_{dcn},c,x}^{-cn})
+.
+\frac
+{
+    \gamma_{w_{dcn}} + C_{x,w_{dcn}}^{-cn}
+}
+{
+    \sum_{w'}^W(\gamma_{w'} + C_{x,w'}^{-cn})
+}
+$$
+
+or 
+
+$$
+P(Z_{cn}) \propto \{
+    P(w_{cn} | x) . P(x | r_{cn}, c) = P(z_{cn}=x, w_{cn}, r_{cn}, c | ...)
+\}
+$$
+
+
+\subsection{conditional probability for $C_{d,c}$}
+
+Can derive in a similar manner to the previous section, or taking the quick approach by rationalising the conditional interms of the propensity of c, in terms of related dependent variables...
+
+i.e., $P(c=x)$ is proportional to i) the propensity of character x globally, ii) the propensity of the characters' assigned topics given x.
+
+I.e., 
+$$
+P(c=x|...) \propto P(c=x) . \prod_{\text{characters tuples}} P(z_{cn} | r_{cn}, c)
+$$
+
+More formally:
+
+$$
+P(c=x | ...) \propto 
+\frac{\alpha_x + C_{x}}{\sum_{c'}^{C} C_{c'}} 
+\prod_{\text{character's tuples}}
+\frac
+{
+    \nu_{r_{\text{tuple}},x,{z_{\text{tuple}}}} + C_{r_{\text{tuple}},x,z_{\text{tuple}}}
+}
+{
+    \sum_k \nu_{r_{\text{tuple}}, x, k} + C_{r_{\text{tuple}},x,k}
+}
+$$
+
+Removing the factors invariate with x:
+
+$$
+P(c=x | ...) \propto 
+\alpha_x + C_{x}
+. 
+\prod_{\text{character's tuples}}
+\frac
+{
+    \nu_{r_{\text{tuple}},x,{z_{\text{tuple}}}} + C_{r_{\text{tuple}},x,z_{\text{tuple}}}
+}
+{
+    \sum_k \nu_{r_{\text{tuple}}, x, k} + C_{r_{\text{tuple}},x,k}
+}
+$$
+
+(Note: this has been separately derived and yields the )
+
+
+
+
+
+% % \bibliographystyle{plain}
+% % \bibliography{bib.bib}
+
+% % \end{multicols}
+\end{document}
+
+% ------
+% Misc useful stuff / notes
+% ------
+
+% https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
+
+
